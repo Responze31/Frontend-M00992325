@@ -30,15 +30,15 @@
         </div>
 
         <div class="row">
-            <div class="col-3" v-for="lesson in lessons" :key="lesson.id">
+            <div class="col-3" v-for="lesson in lessons">
                 <div class="card">
-                    <img :src="lesson.image" class="card-img-top" height="150">
+                    <img :src="lesson.image" height="150">
                     <div class="card-body">
                         <h5><i :class="lesson.icon"></i> {{ lesson.subject }}</h5>
                         <p>Location: {{ lesson.location }}</p>
                         <p>Price: £{{ lesson.price }}</p>
                         <p>Spaces: {{ lesson.spaces }}</p>
-                        <button class="btn btn-primary" :disabled="lesson.spaces === 0" v-on:click="addToCart(lesson)">Add to Cart</button>
+                        <button class="btn btn-primary" :disabled="lesson.spaces === 0" @click="add(lesson)">Add to Cart</button>
                     </div>
                 </div>
             </div>
@@ -66,7 +66,7 @@
                 ]
             },
             methods: {
-                addToCart(lesson) {
+                add(lesson) {
                     if (lesson.spaces > 0) {
                         lesson.spaces--;
                         this.cart.push(lesson);
