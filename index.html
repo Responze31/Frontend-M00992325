@@ -19,6 +19,14 @@
         <div>
             <h2>{{ sitename }}</h2>
             <button class="btn btn-primary" :disabled="cart.length === 0">Cart ({{ cart.length }})</button>
+
+            <label>Sort by:</label>
+            <select v-model="sortBy" v-on:change="sortLessons">
+                <option value="subject">Subject</option>
+                <option value="location">Location</option>
+                <option value="price">Price</option>
+                <option value="spaces">Spaces</option>
+            </select>
         </div>
 
         <div class="row">
@@ -43,6 +51,7 @@
             data: {
                 sitename: 'After School Lessons',
                 cart: [],
+                sortBy: 'subject',
                 lessons: [
                     { id: 1, subject: 'Math', location: 'Hendon', price: 100, spaces: 5, icon: 'fa-solid fa-calculator', image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400' },
                     { id: 2, subject: 'English', location: 'Colindale', price: 90, spaces: 5, icon: 'fa-solid fa-book', image: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400' },
@@ -62,6 +71,9 @@
                         lesson.spaces--;
                         this.cart.push(lesson);
                     }
+                },
+                sortLessons() {
+                    this.lessons.sort((a, b) => a[this.sortBy] > b[this.sortBy] ? 1 : -1);
                 }
             }
         });
