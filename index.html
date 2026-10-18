@@ -27,6 +27,11 @@
                 <option value="price">Price</option>
                 <option value="spaces">Spaces</option>
             </select>
+
+            <select v-model="order" v-on:change="sortLessons">
+                <option value="ascend">Ascending</option>
+                <option value="descend">Descending</option>
+            </select>
         </div>
 
         <div class="row">
@@ -52,6 +57,7 @@
                 sitename: 'After School Lessons',
                 cart: [],
                 sortBy: 'subject',
+                order: 'ascend',
                 lessons: [
                     { id: 1, subject: 'Math', location: 'Hendon', price: 100, spaces: 5, icon: 'fa-solid fa-calculator', image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400' },
                     { id: 2, subject: 'English', location: 'Colindale', price: 90, spaces: 5, icon: 'fa-solid fa-book', image: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400' },
@@ -73,7 +79,12 @@
                     }
                 },
                 sortLessons() {
-                    this.lessons.sort((a, b) => a[this.sortBy] > b[this.sortBy] ? 1 : -1);
+                    this.lessons.sort((a, b) => {
+                        if (this.order === 'ascend') {
+                            return a[this.sortBy] > b[this.sortBy] ? 1 : -1;
+                        }
+                        return a[this.sortBy] < b[this.sortBy] ? 1 : -1;
+                    });
                 }
             }
         });
