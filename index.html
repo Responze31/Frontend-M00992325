@@ -10,6 +10,9 @@
     <!-- Font Awesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
+    <!-- linking CSS file-->
+    <link rel="stylesheet" href="style.css">
+
     <!-- Vue.js -->
     <script src="https://unpkg.com/vue@2.7.16/dist/vue.js"></script>
 </head>
@@ -37,7 +40,7 @@
         <div class="row">
             <div class="col-3" v-for="lesson in lessons">
                 <div class="card">
-                    <img :src="lesson.image" height="150">
+                    <img :src="lesson.image">
                     <div class="card-body">
                         <h5><i :class="lesson.icon"></i> {{ lesson.subject }}</h5>
                         <p>Location: {{ lesson.location }}</p>
