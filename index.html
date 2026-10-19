@@ -21,8 +21,10 @@
     <div id="app" class="container">
         <div>
             <h2>{{ sitename }}</h2>
-            <button class="btn btn-primary" :disabled="cart.length === 0">Cart ({{ cart.length }})</button>
+            <button class="btn btn-primary" :disabled="cart.length === 0" @click="showCart = !showCart">Cart ({{ cart.length }})</button>
+        </div>
 
+        <div v-if="!showCart">
             <label>Sort by:</label>
             <select v-model="sortBy" v-on:change="sortLessons">
                 <option value="subject">Subject</option>
@@ -35,18 +37,34 @@
                 <option value="ascend">Ascending</option>
                 <option value="descend">Descending</option>
             </select>
+
+            <div class="row">
+                <div class="column" v-for="lesson in lessons">
+                    <div class="card">
+                        <img :src="lesson.image">
+                        <div class="card-body">
+                            <h5><i :class="lesson.icon"></i> {{ lesson.subject }}</h5>
+                            <p>Location: {{ lesson.location }}</p>
+                            <p>Price: £{{ lesson.price }}</p>
+                            <p>Spaces: {{ lesson.spaces }}</p>
+                            <button class="btn btn-primary" :disabled="lesson.spaces === 0" @click="add(lesson)">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="row">
-            <div class="col-3" v-for="lesson in lessons">
-                <div class="card">
-                    <img :src="lesson.image">
-                    <div class="card-body">
-                        <h5><i :class="lesson.icon"></i> {{ lesson.subject }}</h5>
-                        <p>Location: {{ lesson.location }}</p>
-                        <p>Price: £{{ lesson.price }}</p>
-                        <p>Spaces: {{ lesson.spaces }}</p>
-                        <button class="btn btn-primary" :disabled="lesson.spaces === 0" @click="add(lesson)">Add to Cart</button>
+        <div v-else>
+            <h3>Shopping Cart</h3>
+            <div class="row">
+                <div class="column" v-for="lesson in cart">
+                    <div class="card">
+                        <img :src="lesson.image">
+                        <div class="card-body">
+                            <h5><i :class="lesson.icon"></i> {{ lesson.subject }}</h5>
+                            <p>Location: {{ lesson.location }}</p>
+                            <p>Price: £{{ lesson.price }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
