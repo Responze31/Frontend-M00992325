@@ -3,6 +3,7 @@ new Vue({
     data: {
         sitename: 'After School Lessons',
         cart: [],
+        showCart: false,
         sortBy: 'subject',
         order: 'ascend',
         lessons: [
