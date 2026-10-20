@@ -4,6 +4,8 @@ new Vue({
         sitename: 'After School Lessons',
         cart: [],
         showCart: false,
+        name: '',
+        phone: '',
         sortBy: 'subject',
         order: 'ascend',
         lessons: [
@@ -25,6 +27,10 @@ new Vue({
                 lesson.spaces--;
                 this.cart.push(lesson);
             }
+        },
+        remove(lesson) {
+            lesson.spaces++;
+            this.cart.splice(this.cart.indexOf(lesson), 1);
         },
         sortLessons() {
             this.lessons.sort((a, b) => {
