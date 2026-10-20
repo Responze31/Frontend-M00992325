@@ -64,10 +64,16 @@
                             <h5><i :class="lesson.icon"></i> {{ lesson.subject }}</h5>
                             <p>Location: {{ lesson.location }}</p>
                             <p>Price: £{{ lesson.price }}</p>
+                            <button class="btn btn-danger" @click="remove(lesson)">Remove</button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <h3>Checkout</h3>
+            <p>Name: <input v-model="name"></p>
+            <p>Phone: <input v-model="phone"></p>
+            <button class="btn btn-success">Checkout</button>
         </div>
     </div>
 
