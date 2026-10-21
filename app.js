@@ -39,6 +39,12 @@ new Vue({
                 }
                 return a[this.sortBy] < b[this.sortBy] ? 1 : -1;
             });
+        },
+        valid() {
+            return /^[A-Za-z\s]+$/.test(this.name) && /^[0-9]+$/.test(this.phone);
+        },
+        checkout() {
+            alert('Order submitted!');
         }
     }
 });
