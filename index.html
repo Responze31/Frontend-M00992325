@@ -73,7 +73,7 @@
             <h3>Checkout</h3>
             <p>Name: <input v-model="name"></p>
             <p>Phone: <input v-model="phone"></p>
-            <button class="btn btn-success">Checkout</button>
+            <button class="btn btn-success" :disabled="!valid()" @click="checkout">Checkout</button>
         </div>
     </div>
 
