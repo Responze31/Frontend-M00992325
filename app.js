@@ -34,6 +34,9 @@ new Vue({
         },
         cartCount() {
             return this.cart.reduce((sum, item) => sum + item.quantity, 0);
+        },
+        totalPrice() {
+            return this.cart.reduce((sum, item) => sum + this.getLesson(item.lessonId).price * item.quantity, 0);
         }
     },
     methods: {
@@ -59,12 +62,18 @@ new Vue({
             if (item.quantity === 0) {
                 this.cart.splice(this.cart.indexOf(item), 1);
             }
-            if (this.cart.length === 0) {
+            if (!this.cart.length) {
                 this.showCart = false;
             }
         },
+        validName() {
+            return /^[A-Za-z\s]+$/.test(this.name.trim());
+        },
+        validPhone() {
+            return /^[0-9]+$/.test(this.phone.trim());
+        },
         valid() {
-            return /^[A-Za-z\s]+$/.test(this.name) && /^[0-9]+$/.test(this.phone);
+            return this.validName() && this.validPhone();
         },
         checkout() {
             this.message = 'Order submitted!';
