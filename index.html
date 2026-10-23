@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>After School Lessons</title>
 
     <!-- Bootstrap CSS -->
@@ -19,29 +20,31 @@
 <body>
 
     <div id="app" class="container">
-        <div>
+        <nav class="navbar bg-light mb-3 px-3">
             <h2>{{ sitename }}</h2>
-            <button class="btn btn-primary" :disabled="cart.length === 0" @click="showCart = !showCart">Cart ({{ cart.length }})</button>
-        </div>
+            <button class="btn btn-primary" :disabled="cart.length === 0" @click="showCart = !showCart">Cart ({{ cartCount }})</button>
+        </nav>
+
+        <p v-if="message" class="alert alert-success">{{ message }}</p>
 
         <div v-if="!showCart">
             <label>Sort by:</label>
-            <select v-model="sortBy" v-on:change="sortLessons">
+            <select v-model="sortBy">
                 <option value="subject">Subject</option>
                 <option value="location">Location</option>
                 <option value="price">Price</option>
                 <option value="spaces">Spaces</option>
             </select>
 
-            <select v-model="order" v-on:change="sortLessons">
+            <select v-model="order">
                 <option value="ascend">Ascending</option>
                 <option value="descend">Descending</option>
             </select>
 
             <div class="row">
-                <div class="column" v-for="lesson in lessons">
+                <div class="col-12 col-md-6 col-lg-3" v-for="lesson in sortedLessons" :key="lesson.id">
                     <div class="card">
-                        <img :src="lesson.image">
+                        <img :src="lesson.image" :alt="lesson.subject">
                         <div class="card-body">
                             <h5><i :class="lesson.icon"></i> {{ lesson.subject }}</h5>
                             <p>Location: {{ lesson.location }}</p>
@@ -57,22 +60,31 @@
         <div v-else>
             <h3>Shopping Cart</h3>
             <div class="row">
-                <div class="column" v-for="lesson in cart">
+                <div class="col-12 col-md-6 col-lg-3" v-for="item in cart" :key="item.lessonId">
                     <div class="card">
-                        <img :src="lesson.image">
+                        <img :src="getLesson(item.lessonId).image" :alt="getLesson(item.lessonId).subject">
                         <div class="card-body">
-                            <h5><i :class="lesson.icon"></i> {{ lesson.subject }}</h5>
-                            <p>Location: {{ lesson.location }}</p>
-                            <p>Price: £{{ lesson.price }}</p>
-                            <button class="btn btn-danger" @click="remove(lesson)">Remove</button>
+                            <h5><i :class="getLesson(item.lessonId).icon"></i> {{ getLesson(item.lessonId).subject }}</h5>
+                            <p>Location: {{ getLesson(item.lessonId).location }}</p>
+                            <p>Price: £{{ getLesson(item.lessonId).price }}</p>
+                            <p>Quantity: {{ item.quantity }}</p>
+                            <button class="btn btn-danger" @click="remove(item)">Remove</button>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <p><strong>Total: £{{ totalPrice }}</strong></p>
+
             <h3>Checkout</h3>
-            <p>Name: <input v-model="name"></p>
-            <p>Phone: <input v-model="phone"></p>
+            <p>
+                Name: <input v-model="name">
+                <span v-if="name && !validName()" class="text-danger">Letters only</span>
+            </p>
+            <p>
+                Phone: <input v-model="phone">
+                <span v-if="phone && !validPhone()" class="text-danger">Numbers only</span>
+            </p>
             <button class="btn btn-success" :disabled="!valid()" @click="checkout">Checkout</button>
         </div>
     </div>
