@@ -6,6 +6,7 @@ new Vue({
         showCart: false,
         name: '',
         phone: '',
+        message: '',
         sortBy: 'subject',
         order: 'ascend',
         lessons: [
@@ -21,30 +22,56 @@ new Vue({
             { id: 10, subject: 'Drama', location: 'Camden', price: 90, spaces: 5, icon: 'fa-solid fa-masks-theater', image: 'images/drama.png' }
         ]
     },
+    computed: {
+        sortedLessons() {
+            const dir = this.order === 'ascend' ? 1 : -1;
+            return this.lessons.slice().sort((a, b) => {
+                const x = a[this.sortBy], y = b[this.sortBy];
+                if (x < y) return -1 * dir;
+                if (x > y) return 1 * dir;
+                return 0;
+            });
+        },
+        cartCount() {
+            return this.cart.reduce((sum, item) => sum + item.quantity, 0);
+        }
+    },
     methods: {
+        getLesson(id) {
+            return this.lessons.find(l => l.id === id);
+        },
         add(lesson) {
             if (lesson.spaces > 0) {
                 lesson.spaces--;
-                this.cart.push(lesson);
+                this.message = '';
+                const item = this.cart.find(i => i.lessonId === lesson.id);
+                if (item) {
+                    item.quantity++;
+                } else {
+                    this.cart.push({ lessonId: lesson.id, quantity: 1 });
+                }
             }
         },
-        remove(lesson) {
-            lesson.spaces++;
-            this.cart.splice(this.cart.indexOf(lesson), 1);
-        },
-        sortLessons() {
-            this.lessons.sort((a, b) => {
-                if (this.order === 'ascend') {
-                    return a[this.sortBy] > b[this.sortBy] ? 1 : -1;
-                }
-                return a[this.sortBy] < b[this.sortBy] ? 1 : -1;
-            });
+        remove(item) {
+            const lesson = this.getLesson(item.lessonId);
+            if (lesson) lesson.spaces++;
+            item.quantity--;
+            if (item.quantity === 0) {
+                this.cart.splice(this.cart.indexOf(item), 1);
+            }
+            if (this.cart.length === 0) {
+                this.showCart = false;
+            }
         },
         valid() {
             return /^[A-Za-z\s]+$/.test(this.name) && /^[0-9]+$/.test(this.phone);
         },
         checkout() {
-            alert('Order submitted!');
+            this.message = 'Order submitted!';
+            this.cart = [];
+            this.name = '';
+            this.phone = '';
+            this.showCart = false;
         }
     }
 });
