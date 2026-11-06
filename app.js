@@ -2,7 +2,7 @@ new Vue({
     el: '#app',
     data: {
         sitename: 'After School Lessons',
-        serverUrl: 'https://backend-m00992325.onrender.com/',
+        serverUrl: 'https://backend-m00992325.onrender.com',
         cart: [],
         showCart: false,
         name: '',
