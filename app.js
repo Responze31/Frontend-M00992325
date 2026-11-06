@@ -1,7 +1,7 @@
 new Vue({
     el: '#app',
     data: {
-        sitename: 'After School Lessons',
+        sitename: 'Club Activities',
         serverUrl: 'https://backend-m00992325.onrender.com',
         cart: [],
         showCart: false,
@@ -10,7 +10,7 @@ new Vue({
         message: '',
         sortBy: 'subject',
         order: 'ascend',
-        lessons: [] // Fetched from Back-End
+        lessons: [] 
     },
     created() {
         this.fetchLessons();
@@ -36,7 +36,6 @@ new Vue({
         }
     },
     methods: {
-        // A. Fetch that retrieves all lessons with GET (2%)
         fetchLessons() {
             fetch(`${this.serverUrl}/lessons`)
                 .then(response => response.json())
@@ -90,7 +89,6 @@ new Vue({
                 }))
             };
 
-            // B. Fetch that saves a new order with POST (2%)
             fetch(`${this.serverUrl}/orders`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -98,7 +96,6 @@ new Vue({
             })
             .then(response => response.json())
             .then(() => {
-                // C. Fetch that updates available lesson space with PUT (2%)
                 this.cart.forEach(item => {
                     const lesson = this.getLesson(item.lessonId);
                     if (lesson) {
@@ -110,11 +107,14 @@ new Vue({
                     }
                 });
 
-                this.message = 'Order submitted!';
+                this.message = 'Booking confirmed! Your spaces have been reserved.';
                 this.cart = [];
                 this.name = '';
                 this.phone = '';
                 this.showCart = false;
+                setTimeout(() => {
+                    this.message = '';
+                }, 4000);
             })
             .catch(err => console.error('Error submitting order:', err));
         }
