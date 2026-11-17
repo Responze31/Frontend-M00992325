@@ -25,7 +25,15 @@
         </div>
 
         <div v-if="!showCart">
-            <div class="sort-bar mb-3">
+            <div class="sort-bar flex-wrap mb-3">
+                <input type="search" v-model="searchQuery" @input="searchLessons" class="form-control form-control-sm w-auto" placeholder="Search lessons...">
+
+                <label>Teacher:</label>
+                <select v-model="selectedTeacher" @change="filterByTeacher" class="form-select form-select-sm w-auto">
+                    <option value="">All Teachers</option>
+                    <option v-for="teacher in teachers" :key="teacher" :value="teacher">{{ teacher }}</option>
+                </select>
+
                 <label>Sort by:</label>
                 <select v-model="sortBy" class="form-select form-select-sm w-auto">
                     <option value="subject">Subject</option>
@@ -46,6 +54,7 @@
                         <img :src="`${serverUrl}/${lesson.image}`" :alt="lesson.subject">
                         <div class="card-body">
                             <h5><i :class="lesson.icon"></i> {{ lesson.subject }}</h5>
+                            <p>Teacher: {{ lesson.teacherFirstName }} {{ lesson.teacherLastName }}</p>
                             <p>Location: {{ lesson.location }}</p>
                             <p>Price: £{{ lesson.price }}</p>
                             <p>Spaces: {{ lesson.spaces }}</p>
@@ -60,12 +69,12 @@
             <h4>Shopping Cart</h4>
             <div class="row">
                 <div class="col-12 col-md-6 col-lg-3" v-for="item in cart" :key="item.lessonId">
-                    <div class="card" v-if="getLesson(item.lessonId)">
-                        <img :src="`${serverUrl}/${getLesson(item.lessonId).image}`" :alt="getLesson(item.lessonId).subject">
+                    <div class="card">
+                        <img :src="`${serverUrl}/${item.image}`" :alt="item.subject">
                         <div class="card-body">
-                            <h5><i :class="getLesson(item.lessonId).icon"></i> {{ getLesson(item.lessonId).subject }}</h5>
-                            <p>Location: {{ getLesson(item.lessonId).location }}</p>
-                            <p>Price: £{{ getLesson(item.lessonId).price }}</p>
+                            <h5><i :class="item.icon"></i> {{ item.subject }}</h5>
+                            <p>Location: {{ item.location }}</p>
+                            <p>Price: £{{ item.price }}</p>
                             <p>Quantity: {{ item.quantity }}</p>
                             <button class="btn btn-danger w-100" @click="remove(item)">Remove</button>
                         </div>
