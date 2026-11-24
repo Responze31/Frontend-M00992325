@@ -2,7 +2,7 @@ new Vue({
     el: '#app',
     data: {
         sitename: 'Club Activities',
-        serverUrl: 'https://backend-m00992325.onrender.com',
+        apiUrl: 'https://backend-m00992325.onrender.com',
         cart: [],
         showCart: false,
         name: '',
@@ -10,144 +10,171 @@ new Vue({
         message: '',
         sortBy: 'subject',
         order: 'ascend',
-        searchQuery: '',
+        search: '',
         teachers: [],
-        selectedTeacher: '',
+        teacher: '',
         lessons: []
     },
+
+    // load saved cart and fetch data when page opens
     created() {
-        const savedCart = localStorage.getItem('cart');
-        if (savedCart) {
+        const saved = localStorage.getItem('cart');
+        if (saved) {
             try {
-                this.cart = JSON.parse(savedCart);
-            } catch (e) {
+                this.cart = JSON.parse(saved);
+            } catch (err) {
                 this.cart = [];
             }
         }
-        this.fetchLessons();
-        this.fetchTeachers();
+        this.loadLessons();
+        this.loadTeachers();
     },
+
     computed: {
+        // sort lessons by chosen field and order
         sortedLessons() {
             const dir = this.order === 'ascend' ? 1 : -1;
             return this.lessons.slice().sort((a, b) => {
-                const x = a[this.sortBy], y = b[this.sortBy];
-                if (x < y) return -1 * dir;
-                if (x > y) return 1 * dir;
+                if (a[this.sortBy] < b[this.sortBy]) return -1 * dir;
+                if (a[this.sortBy] > b[this.sortBy]) return 1 * dir;
                 return 0;
             });
         },
-        cartCount() {
-            return this.cart.reduce((sum, item) => sum + item.quantity, 0);
+
+        // total number of items in cart
+        totalItems() {
+            return this.cart.reduce((total, item) => total + item.quantity, 0);
         },
+
+        // total cost of everything in cart
         totalPrice() {
-            return this.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            return this.cart.reduce((total, item) => total + item.price * item.quantity, 0);
         }
     },
+
     methods: {
+        // keep cart saved in browser
         saveCart() {
             localStorage.setItem('cart', JSON.stringify(this.cart));
         },
-        applyCartSpaces(lessons) {
-            let updated = false;
-            const adjusted = lessons.map(lesson => {
-                const item = this.cart.find(i => i.lessonId === lesson._id);
-                if (item) {
-                    lesson.spaces = Math.max(0, lesson.spaces - item.quantity);
-                    item.remainingSpaces = lesson.spaces;
-                    updated = true;
+
+        // take away spaces already in cart so numbers stay right
+        syncSpaces(list) {
+            list.forEach(lesson => {
+                const found = this.cart.find(item => item.lessonId === lesson._id);
+                if (found) {
+                    lesson.spaces = Math.max(0, lesson.spaces - found.quantity);
+                    found.remainingSpaces = lesson.spaces;
                 }
-                return lesson;
             });
-            if (updated) {
-                this.saveCart();
+            this.saveCart();
+            return list;
+        },
+
+        // get lessons from backend (or by teacher if one is picked)
+        loadLessons() {
+            let url = `${this.apiUrl}/lessons`;
+            if (this.teacher) {
+                url += `?teacher=${encodeURIComponent(this.teacher)}`;
             }
-            return adjusted;
-        },
-        fetchLessons() {
-            const url = this.selectedTeacher
-                ? `${this.serverUrl}/lessons?teacher=${encodeURIComponent(this.selectedTeacher)}`
-                : `${this.serverUrl}/lessons`;
             fetch(url)
-                .then(response => response.json())
+                .then(res => res.json())
                 .then(data => {
-                    this.lessons = this.applyCartSpaces(data);
+                    this.lessons = this.syncSpaces(data);
                 })
-                .catch(err => console.error('Error fetching lessons:', err));
+                .catch(err => console.error('Could not load lessons:', err));
         },
-        fetchTeachers() {
-            fetch(`${this.serverUrl}/teachers`)
-                .then(response => response.json())
+
+        // get teacher list for dropdown
+        loadTeachers() {
+            fetch(`${this.apiUrl}/teachers`)
+                .then(res => res.json())
                 .then(data => {
                     this.teachers = data;
                 })
-                .catch(err => console.error('Error fetching teachers:', err));
+                .catch(err => console.error('Could not load teachers:', err));
         },
+
+        // search lessons on backend
         searchLessons() {
-            this.selectedTeacher = '';
-            const query = this.searchQuery;
-            fetch(`${this.serverUrl}/search?q=${encodeURIComponent(query)}`)
-                .then(response => response.json())
+            this.teacher = '';
+            const text = this.search;
+            fetch(`${this.apiUrl}/search?q=${encodeURIComponent(text)}`)
+                .then(res => res.json())
                 .then(data => {
-                    if (query === this.searchQuery) {
-                        this.lessons = this.applyCartSpaces(data);
+                    if (text === this.search) {
+                        this.lessons = this.syncSpaces(data);
                     }
                 })
-                .catch(err => console.error('Error searching lessons:', err));
+                .catch(err => console.error('Search failed:', err));
         },
-        filterByTeacher() {
-            this.searchQuery = '';
-            this.fetchLessons();
+
+        // run when teacher dropdown changes
+        pickTeacher() {
+            this.search = '';
+            this.loadLessons();
         },
+
+        // add one space of a lesson to cart
         add(lesson) {
-            if (lesson.spaces > 0) {
-                lesson.spaces--;
-                this.message = '';
-                const item = this.cart.find(i => i.lessonId === lesson._id);
-                if (item) {
-                    item.quantity++;
-                    item.remainingSpaces = lesson.spaces;
-                } else {
-                    this.cart.push({
-                        lessonId: lesson._id,
-                        subject: lesson.subject,
-                        location: lesson.location,
-                        price: lesson.price,
-                        image: lesson.image,
-                        icon: lesson.icon,
-                        quantity: 1,
-                        remainingSpaces: lesson.spaces
-                    });
-                }
-                this.saveCart();
+            if (lesson.spaces <= 0) return;
+
+            lesson.spaces--;
+            this.message = '';
+
+            const found = this.cart.find(item => item.lessonId === lesson._id);
+            if (found) {
+                found.quantity++;
+                found.remainingSpaces = lesson.spaces;
+            } else {
+                this.cart.push({
+                    lessonId: lesson._id,
+                    subject: lesson.subject,
+                    location: lesson.location,
+                    price: lesson.price,
+                    image: lesson.image,
+                    icon: lesson.icon,
+                    quantity: 1,
+                    remainingSpaces: lesson.spaces
+                });
             }
+            this.saveCart();
         },
+
+        // remove one space from cart and add it back to lesson
         remove(item) {
             const lesson = this.lessons.find(l => l._id === item.lessonId);
             if (lesson) {
                 lesson.spaces++;
             }
+
             item.quantity--;
             item.remainingSpaces++;
+
             if (item.quantity === 0) {
                 this.cart.splice(this.cart.indexOf(item), 1);
             }
             this.saveCart();
-            if (!this.cart.length) {
+
+            if (this.cart.length === 0) {
                 this.showCart = false;
             }
         },
-        validName() {
+
+        // checkout form validation
+        checkName() {
             return /^[A-Za-z\s]+$/.test(this.name.trim());
         },
-        validPhone() {
+        checkPhone() {
             return /^[0-9]+$/.test(this.phone.trim());
         },
-        valid() {
-            return this.validName() && this.validPhone();
+        canCheckout() {
+            return this.checkName() && this.checkPhone();
         },
+
+        // send order to backend and update lesson spaces
         checkout() {
-            const orderData = {
+            const order = {
                 name: this.name.trim(),
                 phone: this.phone.trim(),
                 lessons: this.cart.map(item => ({
@@ -156,27 +183,23 @@ new Vue({
                 }))
             };
 
-            fetch(`${this.serverUrl}/orders`, {
+            fetch(`${this.apiUrl}/orders`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orderData)
+                body: JSON.stringify(order)
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Order request failed');
-                }
-                return response.json();
+            .then(res => {
+                if (!res.ok) throw new Error('Order failed');
+                return res.json();
             })
             .then(() => {
                 const updates = this.cart.map(item =>
-                    fetch(`${this.serverUrl}/lessons/${item.lessonId}`, {
+                    fetch(`${this.apiUrl}/lessons/${item.lessonId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ spaces: item.remainingSpaces })
                     }).then(res => {
-                        if (!res.ok) {
-                            throw new Error('Failed to update spaces');
-                        }
+                        if (!res.ok) throw new Error('Space update failed');
                     })
                 );
                 return Promise.all(updates);
@@ -192,7 +215,7 @@ new Vue({
                     this.message = '';
                 }, 4000);
             })
-            .catch(err => console.error('Error submitting order:', err));
+            .catch(err => console.error('Checkout error:', err));
         }
     }
 });
